@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 void main() => runApp(Login());
 
 class Login extends StatelessWidget {
@@ -33,6 +34,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FloatingActionButton.extended(
+              label: const Text('Inicio de Sesion'),
+              backgroundColor: Colors.grey,
+              onPressed: () {
+                postData();
+              },
+            ),
+          ],
+        ),
       appBar: AppBar(
         title: Text('Inicio de sesión'),
       ),
@@ -54,26 +68,41 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 obscureText: true,
               ),
-              ElevatedButton(
-                onPressed: _prueba,
-                child: Text('Iniciar sesión'),
-              ),
-              
-           ],
-            
+            ],
           ),
         ),
       ),
     );
   }
-  void _prueba()async{
-    final sharedPreferences = await SharedPreferences.getInstance();
 
-    sharedPreferences.setString('userName', "karla");
-final userName = sharedPreferences.getString('userName');
-print(userName);
+  Future<void> postData() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    final url =
+        Uri.parse('https://biblioapidb.azurewebsites.net/api/User/Login');
+    final data = {'email': email.toString(), 'password': password.toString()};
+    final jsonData = jsonEncode(data);
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonData,
+    );
+    print('-------------------*');
+    if (response.statusCode == 200) {
+      // procesa la respuesta exitosa
+      final responseData = jsonDecode(response.body);
+      final sharedPreferences = await SharedPreferences.getInstance();
+      sharedPreferences.setString('email', email.toString());
+      print(sharedPreferences.getString('email'));
+      //sharedPreferences.remove('userName'); //Eliminar
+      // ... hacer algo con los datos de respuesta
+    } else {
+      // maneja errores
+      print('error-----------');
+    }
   }
-  void _login() async {
+
+  /*void _login() async {
     final email = _emailController.text;
     final password = _passwordController.text;
     var passwordDos = "andkadnsjk";
@@ -156,6 +185,6 @@ print(userName);
     return;
   }
 
-}
+}*/
 
 }
